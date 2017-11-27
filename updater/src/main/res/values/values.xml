@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="blue_dark">#ff0099cc</color>
+    <color name="blue_light">#ff33b5e5</color>
+    <color name="dialog_message">#666666</color>
+    <color name="dialog_title">#888888</color>
+    <color name="grey_divier">#d7d7db</color>
+    <color name="light_blue_400">#29B6F6</color>
+    <color name="light_blue_700">#0288D1</color>
+    <color name="white">#ffffff</color>
+    <dimen name="dialog_margin">32dip</dimen>
+    <dimen name="dialog_padding">24dip</dimen>
+    <dimen name="divier">1px</dimen>
+    <dimen name="font_large_size">16sp</dimen>
+    <dimen name="font_normal_size">14sp</dimen>
+    <dimen name="large_margin">16dip</dimen>
+    <dimen name="large_padding">16dip</dimen>
+    <dimen name="normal_margin">8dip</dimen>
+    <dimen name="normal_padding">8dip</dimen>
+    <dimen name="spot_progress_margin">24dp</dimen>
+    <dimen name="spot_progress_width">240dp</dimen>
+    <dimen name="spot_size">8dp</dimen>
+
+</resources>
