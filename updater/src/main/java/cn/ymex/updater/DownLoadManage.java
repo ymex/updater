@@ -77,7 +77,7 @@ public class DownLoadManage {
      * @throws Exception
      */
     public void installApk(Context context, DownLoadInfo info) throws Exception {
-       
+
         if (TextUtils.isEmpty(info.getSavePath())) {
             throw new Exception("apk savePath is empty!");
         }
