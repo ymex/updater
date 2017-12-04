@@ -10,9 +10,11 @@ import java.io.File;
 
 import cn.ymex.popup.dialog.PopupDialog;
 import cn.ymex.rxretrofit.OkHttpBuilder;
+import cn.ymex.rxretrofit.http.LogInterceptor;
 import cn.ymex.rxretrofit.http.ResultObserver;
 import cn.ymex.rxretrofit.http.T;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -26,6 +28,8 @@ public class Updater extends FileDownloadSampleListener {
     String url;
     Context context;
     int versionCode;
+    int appId;
+    String channel;
     static Updater updater;
     VersionDialogController controller;
     DownLoadInfo loadInfo;
@@ -36,6 +40,7 @@ public class Updater extends FileDownloadSampleListener {
         }
         return updater;
     }
+
 
     /**
      * baseUrl
@@ -48,6 +53,16 @@ public class Updater extends FileDownloadSampleListener {
         return this;
     }
 
+    public Updater setAppId(int appId) {
+        this.appId = appId;
+        return this;
+    }
+
+    public Updater setChannel(String channel) {
+        this.channel = channel;
+        return this;
+    }
+
     public Updater setVersionCode(int versionCode) {
         this.versionCode = versionCode;
         return this;
@@ -55,19 +70,32 @@ public class Updater extends FileDownloadSampleListener {
 
     public void checkVersion() {
         getRetrofit(url).create(ApiService.class)
-                .checkVersion()
+                .checkVersion(appId,channel)
                 .compose(T.create().<ResultVersion>transformer())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new ResultObserver<ResultVersion>() {
                     @Override
                     public void onResult(ResultVersion resultVersion) {
                         super.onResult(resultVersion);
+
                         if (resultVersion != null && "200".equals(resultVersion.getCode())) {
                             ResultVersion.Version version = resultVersion.getData();
                             if (version != null && version.getVersion_code() > versionCode) {
                                 showLoadDialog(version);
                             }
                         }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        super.onError(e);
+                        System.out.println("----------:::: finish"+e.getLocalizedMessage());
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        super.onFinish();
+                        System.out.println("----------:::: finish");
                     }
                 });
     }
@@ -104,9 +132,12 @@ public class Updater extends FileDownloadSampleListener {
     }
 
     public Retrofit getRetrofit(String url) {
+        OkHttpClient client = OkHttpBuilder.getInstance().builder().addInterceptor(new LogInterceptor()).build();
+
         return new Retrofit.Builder()
-                .client(OkHttpBuilder.getInstance().defaultClient())
+                .client(client)
                 .baseUrl(url)
+
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();

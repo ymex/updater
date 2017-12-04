@@ -28,7 +28,7 @@ public class DownLoadManage {
 
 
 
-    public void init(Application context) {
+    public static void init(Application context) {
 
         FileDownloadLog.NEED_LOG = isRunInDebug(context);
 

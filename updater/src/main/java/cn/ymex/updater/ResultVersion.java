@@ -117,4 +117,13 @@ public class ResultVersion {
             this.channel = channel;
         }
     }
+
+    @Override
+    public String toString() {
+        return "ResultVersion{" +
+                "code='" + code + '\'' +
+                ", message='" + message + '\'' +
+                ", data=" + data +
+                '}';
+    }
 }

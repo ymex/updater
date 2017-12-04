@@ -3,6 +3,8 @@ package cn.ymex.updater;
 import io.reactivex.Observable;
 import okhttp3.ResponseBody;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
+import retrofit2.http.QueryName;
 
 
 /**
@@ -11,6 +13,6 @@ import retrofit2.http.GET;
  */
 
 public interface ApiService {
-    @GET("/")
-    Observable<ResultVersion> checkVersion();
+    @GET("/{app}")
+    Observable<ResultVersion> checkVersion(@Path("app") int app, @QueryName String channel);
 }
