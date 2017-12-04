@@ -7,6 +7,7 @@ import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.liulishuo.filedownloader.FileDownloadSampleListener;
 
 import java.io.File;
+import java.io.IOException;
 
 import cn.ymex.popup.dialog.PopupDialog;
 import cn.ymex.rxretrofit.OkHttpBuilder;
@@ -15,6 +16,7 @@ import cn.ymex.rxretrofit.http.ResultObserver;
 import cn.ymex.rxretrofit.http.T;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -71,19 +73,24 @@ public class Updater extends FileDownloadSampleListener {
     public void checkVersion() {
         getRetrofit(url).create(ApiService.class)
                 .checkVersion(appId,channel)
-                .compose(T.create().<ResultVersion>transformer())
+                .compose(T.create().<ResponseBody>transformer())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new ResultObserver<ResultVersion>() {
+                .subscribe(new ResultObserver<ResponseBody>() {
                     @Override
-                    public void onResult(ResultVersion resultVersion) {
+                    public void onResult(ResponseBody resultVersion) {
                         super.onResult(resultVersion);
-
-                        if (resultVersion != null && "200".equals(resultVersion.getCode())) {
-                            ResultVersion.Version version = resultVersion.getData();
-                            if (version != null && version.getVersion_code() > versionCode) {
-                                showLoadDialog(version);
-                            }
+                        try {
+                            System.out.println("-----::::res:::"+resultVersion.string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
+//                        if (resultVersion != null && "200".equals(resultVersion.getCode())) {
+//                            ResultVersion.Version version = resultVersion.getData();
+//
+//                            if (version != null && Integer.valueOf(version.getVersion_code()) > versionCode) {
+//                                showLoadDialog(version);
+//                            }
+//                        }
                     }
 
                     @Override
@@ -102,7 +109,7 @@ public class Updater extends FileDownloadSampleListener {
 
     private void showLoadDialog(ResultVersion.Version version) {
         controller = VersionDialogController.build()
-                .setTouchDismiss(version.getForce() == 1)
+                .setTouchDismiss(Integer.valueOf(version.getForce()) == 1)
                 .setContent(version.getUpdate_content());
         PopupDialog.create(context).controller(controller).show();
 
