@@ -1,10 +1,14 @@
 # updater
 app updater manager
 
-just for me .
 
-该lib需要依赖
+***Now this library is for personal use only, please do not use it.***
+
+## Giadle引入
 ```
+compile 'cn.ymex.app:updater:0.0.1'
+
+//需要依赖以下库
 compile 'cn.ymex:rx-retrofit:1.0.1'
 compile 'cn.ymex:popup-dialog:1.2.3'
 
