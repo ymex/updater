@@ -6,4 +6,10 @@
     android:layout_height="match_parent"
     tools:context="cn.ymex.ymex_updater.AppLaunchActivity">
 
+    <Button
+        android:gravity="center"
+        android:id="@+id/download"
+        android:layout_width="match_parent"
+        android:text="检查版本"
+        android:layout_height="wrap_content" />
 </android.support.constraint.ConstraintLayout>

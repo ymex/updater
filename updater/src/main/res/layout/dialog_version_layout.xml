@@ -25,6 +25,7 @@
             android:layout_marginBottom="8dip"
             android:ellipsize="end"
             android:maxLines="1"
+            android:gravity="center"
             android:textColor="@color/dialog_title"
             android:textSize="@dimen/font_large_size"
             android:textStyle="bold"

@@ -2,7 +2,7 @@ package cn.ymex.ymex_updater;
 
 import android.app.Application;
 
-import cn.ymex.updater.DownLoadManage;
+import cn.ymex.updater.Updater;
 
 /**
  * Created by ymexc on 2017/12/4.
@@ -13,6 +13,6 @@ public class AppContent extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        DownLoadManage.init(this);
+        Updater.init(this);
     }
 }

@@ -2,6 +2,7 @@ package cn.ymex.updater;
 
 import android.content.Context;
 import android.text.Html;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +14,7 @@ import cn.ymex.popup.dialog.PopupDialog;
 
 /**
  * Created by ymexc on 2017/11/27.
- * About:TODO
+ * About:升级弹出框
  */
 
 public class VersionDialogController implements DialogControllable {
@@ -23,6 +24,7 @@ public class VersionDialogController implements DialogControllable {
     private Button btnUpdate;
     private View vProgress;
     private TextView tvProgress;
+    private String title;
 
     public static VersionDialogController build() {
         return new VersionDialogController();
@@ -50,6 +52,11 @@ public class VersionDialogController implements DialogControllable {
         return vProgress;
     }
 
+    public VersionDialogController setTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
     @Override
     public View createView(Context context, ViewGroup parent) {
         return LayoutInflater.from(context).inflate(R.layout.dialog_version_layout, parent, false);
@@ -67,6 +74,13 @@ public class VersionDialogController implements DialogControllable {
                 tvProgress = (TextView) layout.findViewById(R.id.tv_progress);
                 TextView textView = (TextView) layout.findViewById(R.id.tvContent);
                 textView.setText(Html.fromHtml(content));
+                TextView tvTitle = (TextView) layout.findViewById(R.id.tv_title);
+                if (TextUtils.isEmpty(title)) {
+                    tvTitle.setVisibility(View.GONE);
+                } else {
+                    tvTitle.setVisibility(View.VISIBLE);
+                    tvTitle.setText(title);
+                }
             }
         };
     }

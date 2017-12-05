@@ -11,7 +11,9 @@ import com.liulishuo.filedownloader.FileDownloadSampleListener;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.liulishuo.filedownloader.connection.FileDownloadUrlConnection;
 import com.liulishuo.filedownloader.util.FileDownloadLog;
+import com.liulishuo.filedownloader.util.FileDownloadUtils;
 
+import java.io.File;
 import java.net.Proxy;
 
 
@@ -27,8 +29,7 @@ public class DownLoadManage {
     }
 
 
-
-    public static void init(Application context) {
+    static void init(Application context) {
 
         FileDownloadLog.NEED_LOG = isRunInDebug(context);
 
@@ -49,9 +50,9 @@ public class DownLoadManage {
      * @param loadListener
      * @return
      */
-    public void downloadUpdateApk(DownLoadInfo info, FileDownloadSampleListener loadListener) {
+    void downloadUpdateApk(Info info, FileDownloadSampleListener loadListener) {
 
-        int taskid =  FileDownloader
+        int taskid = FileDownloader
                 .getImpl()
                 .create(info.getUrl())
                 .setPath(info.getSavePath())
@@ -61,7 +62,7 @@ public class DownLoadManage {
     }
 
 
-    public static boolean isRunInDebug(Context context) {
+    static boolean isRunInDebug(Context context) {
         try {
             ApplicationInfo info = context.getApplicationInfo();
             return (info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
@@ -72,11 +73,12 @@ public class DownLoadManage {
 
     /**
      * 安装app
+     *
      * @param context
      * @param info
      * @throws Exception
      */
-    public void installApk(Context context, DownLoadInfo info) throws Exception {
+    void installApk(Context context, Info info) throws Exception {
 
         if (TextUtils.isEmpty(info.getSavePath())) {
             throw new Exception("apk savePath is empty!");
@@ -94,12 +96,58 @@ public class DownLoadManage {
     /**
      * 单独文件下载
      */
-    public void singleFile(DownLoadInfo info,  FileDownloadSampleListener fileDownloaderCallback) {
+    void singleFile(Info info, FileDownloadSampleListener fileDownloaderCallback) {
 
         FileDownloader.getImpl().create(info.getUrl())
                 .setPath(info.getSavePath())
                 .setCallbackProgressTimes(300)
                 .setMinIntervalUpdateSpeed(400)
                 .setListener(fileDownloaderCallback).start();
+    }
+
+    public static class Info {
+        private String url;
+        private String savePath;
+        private String saveName;
+
+        private int taskId;
+
+        public Info(String url) {
+            this.url = url;
+        }
+
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+
+        public int getTaskId() {
+            return taskId;
+        }
+
+        public void setTaskId(int taskId) {
+            this.taskId = taskId;
+        }
+
+        public String getSaveName() {
+            return saveName;
+        }
+
+        public String getSavePath() {
+            return savePath;
+        }
+
+        public void setSaveName(String saveName) {
+            if (TextUtils.isEmpty(saveName)) {
+                return;
+            }
+            this.saveName = saveName;
+            this.savePath = FileDownloadUtils.getDefaultSaveRootPath() + File.separator + saveName;
+        }
     }
 }
