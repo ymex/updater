@@ -5,6 +5,7 @@ import android.content.Context;
 
 import java.io.File;
 
+import cn.ymex.popup.controller.AlertController;
 import cn.ymex.popup.dialog.PopupDialog;
 import cn.ymex.rxretrofit.http.LogInterceptor;
 import cn.ymex.rxretrofit.http.ResultObserver;
@@ -22,24 +23,24 @@ import retrofit2.http.Url;
  * Created by ymex on 2017/11/26.
  * response json
  * {
- *  "code": 20000,
- *  "data": {
- *          "id": "4",
- *          "pid": null,
- *          "app_name": "乐金所Def",
- *          "version_name": "v4.2",
- *          "version_code": "42",
- *          "update_url": "https://ojlyqybn1.qnssl.com/lejinsuo_latest.apk",
- *          "update_content": "这个版本，我们做了一些小的调整： \n1.影片列表，点击海报快速观看预告片 \n2.针对预售的影片，显示“想看人数” \n3.增加影院的在线选座停售时间说明，减少购前焦虑 \n4.下单页面，显示放映结束时间，提前知道几点散场",
- *          "force": "1",
- *          "channel": "default"
+ * "code": 20000,
+ * "data": {
+ * "id": "4",
+ * "pid": null,
+ * "app_name": "乐金所Def",
+ * "version_name": "v4.2",
+ * "version_code": "42",
+ * "update_url": "https://ojlyqybn1.qnssl.com/lejinsuo_latest.apk",
+ * "update_content": "这个版本，我们做了一些小的调整： \n1.影片列表，点击海报快速观看预告片 \n2.针对预售的影片，显示“想看人数” \n3.增加影院的在线选座停售时间说明，减少购前焦虑 \n4.下单页面，显示放映结束时间，提前知道几点散场",
+ * "force": "1",
+ * "channel": "default"
  * },
  * "message": "success",
  * "path": "/api/version/16"
  * }
- *
+ * <p>
  * 1.  Updater.init(this);
- *
+ * <p>
  * 2. Updater.getInstance(AppLaunchActivity.this).setVersionCode(0).checkVersion(url);
  */
 
@@ -81,6 +82,10 @@ public class Updater {
     }
 
     public void checkVersion(String url) {
+        checkVersion(url, true);
+    }
+
+    public void checkVersion(String url, final boolean update) {
         if (!isDownloadInit) {
             throw new IllegalArgumentException("set Update.init(this) int Application onCreate func..");
         }
@@ -95,22 +100,39 @@ public class Updater {
                         super.onResult(resultVersion);
                         if (resultVersion != null && resultVersion.getCode() == successCode) {
                             ResultVersion.Version version = resultVersion.getData();
-                            if (version != null && Integer.valueOf(version.getVersion_code()) > versionCode) {
-                                showLoadDialog(version);
+                            if (update && version != null && Integer.valueOf(version.getVersion_code()) > versionCode) {
+                                showLoadDialog(version, update);
+                            }
+                            if (!update) {
+                                if (Integer.valueOf(version.getVersion_code()) > versionCode) {
+                                    showLoadDialog(version, update);
+                                } else {
+                                    showCurrentDialog();
+                                }
                             }
                         }
                     }
                 });
     }
 
-    private void showLoadDialog(ResultVersion.Version version) {
+
+    private void showCurrentDialog() {
+        PopupDialog.create(context).controller(AlertController.build()
+                .title("提醒")
+                .message("当前已是最新版本。")
+                .positiveButton("确定", null))
+                .show();
+    }
+
+
+    private void showLoadDialog(ResultVersion.Version version, boolean update) {
 
         loadInfo = new DownLoadManage.Info(version.getUpdate_url());
         loadInfo.setSaveName(getAppDownloadName(version.getApp_name(), version.getVersion_name()));
 
         controller = VersionDialogController.build()
                 .setTitle("发现新版本 " + version.getVersion_name())
-                .setTouchDismiss(Integer.valueOf(version.getForce()) == 0)
+                .setTouchDismiss(!update ? !update : Integer.valueOf(version.getForce()) == 0)
                 .setContent(version.getUpdate_content())
                 .setCompletedClickListener(new VersionDialogController.onCompletedClickListener() {
                     @Override

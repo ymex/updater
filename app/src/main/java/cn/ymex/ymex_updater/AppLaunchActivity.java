@@ -25,7 +25,7 @@ public class AppLaunchActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String url = "http://47.93.245.14:8080/api/version/16?channel=default";
-                Updater.getInstance(AppLaunchActivity.this).setVersionCode(0).checkVersion(url);
+                Updater.getInstance(AppLaunchActivity.this).setVersionCode(100).checkVersion(url,false);
             }
         });
 
