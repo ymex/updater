@@ -1,10 +1,5 @@
 package cn.ymex.updater;
 
-/**
- * Created by ymexc on 2017/11/27.
- * About:TODO
- */
-
 public class ResultVersion {
 
     /**

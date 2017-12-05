@@ -2,10 +2,6 @@ package cn.ymex.updater;
 
 import android.app.Application;
 import android.content.Context;
-import android.view.View;
-
-import com.liulishuo.filedownloader.BaseDownloadTask;
-import com.liulishuo.filedownloader.FileDownloadSampleListener;
 
 import java.io.File;
 
@@ -24,16 +20,39 @@ import retrofit2.http.Url;
 
 /**
  * Created by ymex on 2017/11/26.
- * About:
+ * response json
+ * {
+ *  "code": 20000,
+ *  "data": {
+ *          "id": "4",
+ *          "pid": null,
+ *          "app_name": "乐金所Def",
+ *          "version_name": "v4.2",
+ *          "version_code": "42",
+ *          "update_url": "https://ojlyqybn1.qnssl.com/lejinsuo_latest.apk",
+ *          "update_content": "这个版本，我们做了一些小的调整： \n1.影片列表，点击海报快速观看预告片 \n2.针对预售的影片，显示“想看人数” \n3.增加影院的在线选座停售时间说明，减少购前焦虑 \n4.下单页面，显示放映结束时间，提前知道几点散场",
+ *          "force": "1",
+ *          "channel": "default"
+ * },
+ * "message": "success",
+ * "path": "/api/version/16"
+ * }
+ *
+ * 1.  Updater.init(this);
+ *
+ * 2. Updater.getInstance(AppLaunchActivity.this).setVersionCode(0).checkVersion(url);
  */
 
-public class Updater extends FileDownloadSampleListener {
+public class Updater {
     private static boolean isDownloadInit = false;
+
+    int successCode = 20000;
     Context context;
     int versionCode;
     static Updater updater;
     VersionDialogController controller;
     DownLoadManage.Info loadInfo;
+
 
     public Updater(Context context) {
         this.context = context;
@@ -46,9 +65,14 @@ public class Updater extends FileDownloadSampleListener {
         return updater;
     }
 
+    public Updater setSuccessCode(int successCode) {
+        this.successCode = successCode;
+        return this;
+    }
 
     public static void init(Application context) {
         DownLoadManage.init(context);
+        isDownloadInit = true;
     }
 
     public Updater setVersionCode(int versionCode) {
@@ -56,19 +80,20 @@ public class Updater extends FileDownloadSampleListener {
         return this;
     }
 
-    public void checkVersion(String mm) {
+    public void checkVersion(String url) {
         if (!isDownloadInit) {
             throw new IllegalArgumentException("set Update.init(this) int Application onCreate func..");
         }
+
         getRetrofit().create(updateService.class)
-                .checkVersion(mm)
+                .checkVersion(url)
                 .compose(T.create().<ResultVersion>transformer())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new ResultObserver<ResultVersion>() {
                     @Override
                     public void onResult(ResultVersion resultVersion) {
                         super.onResult(resultVersion);
-                        if (resultVersion != null && resultVersion.getCode() == 20000) {
+                        if (resultVersion != null && resultVersion.getCode() == successCode) {
                             ResultVersion.Version version = resultVersion.getData();
                             if (version != null && Integer.valueOf(version.getVersion_code()) > versionCode) {
                                 showLoadDialog(version);
@@ -79,30 +104,41 @@ public class Updater extends FileDownloadSampleListener {
     }
 
     private void showLoadDialog(ResultVersion.Version version) {
-        controller = VersionDialogController.build()
-                .setTitle("发现新版本")
-                .setTouchDismiss(Integer.valueOf(version.getForce()) == 1)
-                .setContent(version.getUpdate_content());
-        PopupDialog.create(context).controller(controller).show();
 
         loadInfo = new DownLoadManage.Info(version.getUpdate_url());
         loadInfo.setSaveName(getAppDownloadName(version.getApp_name(), version.getVersion_name()));
-        try {
-            File file = new File(loadInfo.getSavePath());
-            if (file.exists()) {
-                file.delete();
-            }
-        } catch (Exception e) {
 
-        }
-        controller.getBtnUpdate().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DownLoadManage.getInstance().downloadUpdateApk(loadInfo, Updater.this);
-                controller.getBtnUpdate().setVisibility(View.INVISIBLE);
-                controller.getProgressView().setVisibility(View.VISIBLE);
-            }
-        });
+        controller = VersionDialogController.build()
+                .setTitle("发现新版本 " + version.getVersion_name())
+                .setTouchDismiss(Integer.valueOf(version.getForce()) == 0)
+                .setContent(version.getUpdate_content())
+                .setCompletedClickListener(new VersionDialogController.onCompletedClickListener() {
+                    @Override
+                    public void installApp() {
+                        try {
+                            DownLoadManage.getInstance().installApk(context, loadInfo);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+                    }
+                })
+                .setOnDownStartClickListener(new VersionDialogController.onDownStartClickListener() {
+                    @Override
+                    public void startDownload() {
+                        try {
+                            File file = new File(loadInfo.getSavePath());
+                            if (file.exists()) {
+                                file.delete();
+                            }
+                        } catch (Exception e) {
+                        }
+                        DownLoadManage.getInstance().downloadUpdateApk(loadInfo, controller);
+                    }
+                });
+
+        PopupDialog.create(context).controller(controller).show();
+
     }
 
 
@@ -112,7 +148,6 @@ public class Updater extends FileDownloadSampleListener {
 
     public Retrofit getRetrofit() {
         OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new LogInterceptor()).build();
-
         return new Retrofit.Builder()
                 .client(client)
                 .baseUrl("http://127.0.0.1/")
@@ -121,52 +156,8 @@ public class Updater extends FileDownloadSampleListener {
                 .build();
     }
 
-    //--------------------------------DownLoadListener----------------------------------------
-    @Override
-    public void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        controller.getProgressTextView().setText(String.valueOf(pb(soFarBytes, totalBytes)) + "%");
-    }
 
-    @Override
-    public void completed(BaseDownloadTask task) {
-        controller.getProgressTextView().setText("100%");
-        controller.getBtnUpdate().setText("安装新版本");
-        controller.getBtnUpdate().setVisibility(View.VISIBLE);
-        controller.getProgressView().setVisibility(View.INVISIBLE);
-        controller.getBtnUpdate().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    DownLoadManage.getInstance().installApk(context, loadInfo);
-                } catch (Exception e) {
-                    e.printStackTrace();
-
-                }
-            }
-        });
-    }
-
-    @Override
-    public void started(BaseDownloadTask task) {
-        controller.getProgressTextView().setText("0%");
-    }
-
-    @Override
-    public void error(BaseDownloadTask task, Throwable e) {
-
-    }
-
-    private int pb(int soFarBytes, int totalBytes) {
-        float p = (soFarBytes * 100f) / totalBytes;
-        return p >= 100 ? 100 : (int) p;
-    }
-
-    /**
-     * Created by ymexc on 2017/11/27.
-     * About: api
-     */
-
-    public static interface updateService {
+    public interface updateService {
         @GET
         Observable<ResultVersion> checkVersion(@Url String url);
     }
