@@ -1,3 +1,5 @@
+[ ![Download](https://api.bintray.com/packages/ymex/maven/updater/images/download.svg) ](https://bintray.com/ymex/maven/updater/_latestVersion)
+
 # updater
 app updater manager
 
@@ -12,6 +14,8 @@ compile 'cn.ymex.app:updater:0.0.1'
 compile 'cn.ymex:rx-retrofit:1.0.1'
 compile 'cn.ymex:popup-dialog:1.2.3'
 
+//包含依赖的库
+//implementation 'com.liulishuo.filedownloader:library:1.6.8'
 ```
 
 
