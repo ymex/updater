@@ -29,7 +29,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.liulishuo.filedownloader:library:1.6.8'
+    compile 'com.liulishuo.filedownloader:library:1.6.8'
     provided 'cn.ymex:rx-retrofit:1.0.1'
     provided 'cn.ymex:popup-dialog:1.2.3'
     testImplementation 'junit:junit:4.12'

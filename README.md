@@ -8,14 +8,14 @@ app updater manager
 
 ## Giadle引入
 ```
-compile 'cn.ymex.app:updater:0.0.1'
+compile 'cn.ymex.app:updater:0.0.2'
 
 //需要依赖以下库
 compile 'cn.ymex:rx-retrofit:1.0.1'
 compile 'cn.ymex:popup-dialog:1.2.3'
 
 //包含依赖的库
-//implementation 'com.liulishuo.filedownloader:library:1.6.8'
+//compile 'com.liulishuo.filedownloader:library:1.6.8'
 ```
 
 
