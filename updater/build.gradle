@@ -30,11 +30,9 @@ dependencies {
 
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.liulishuo.filedownloader:library:1.6.8'
-    compileOnly 'cn.ymex:rx-retrofit:1.0.1'
-    compileOnly 'cn.ymex:popup-dialog:1.2.3'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
 
 

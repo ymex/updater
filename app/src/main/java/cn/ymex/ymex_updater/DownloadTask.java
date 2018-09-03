@@ -1,14 +1,8 @@
-package cn.ymex.updater;
+package cn.ymex.ymex_updater;
 
-import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Environment;
-import android.os.PowerManager;
-import android.support.v4.content.FileProvider;
-import android.text.TextUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,19 +17,11 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
 
     // 下载存储的文件名
     private DownloadListener downloadListener;
-    private Context context;
 
-    public DownloadTask(DownloadListener downloadListener, Context context) {
+
+    public DownloadTask(DownloadListener downloadListener) {
         this.downloadListener = downloadListener;
-        this.context = context;
     }
-
-    public static final String PROVIDER_PATH = "quzhuazhua/files";
-    public static final String AUTHORITIES = "com.shiguang.quzhuazhua.fileprovider";
-
-
-    private PowerManager.WakeLock mWakeLock;
-
 
     @Override
     protected String doInBackground(String... sUrl) {
@@ -44,6 +30,7 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
         HttpURLConnection connection = null;
         File file = null;
         try {
+
             URL url = new URL(sUrl[0]);
             connection = (HttpURLConnection) url.openConnection();
             connection.connect();
@@ -51,21 +38,18 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
                 String error = "Server returned HTTP "
                         + connection.getResponseCode() + " "
                         + connection.getResponseMessage();
-                ;
                 if (downloadListener != null) {
                     downloadListener.onDownError(new Exception(error));
                 }
-                return error;
+                return null;
             }
 
             int fileLength = connection.getContentLength();
-            if (Environment.getExternalStorageState().equals(
-                    Environment.MEDIA_MOUNTED)) {
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 Uri uri = Uri.parse(sUrl[0]);
-                file = new File(Environment.getExternalStorageDirectory(), PROVIDER_PATH + File.separator + uri.getLastPathSegment());
 
+                file = new File(Environment.getExternalStorageDirectory(), Updater.get().getProviderPath() + File.separator + uri.getLastPathSegment());
                 if (!file.exists()) {
-                    // 判断父文件夹是否存在
                     if (!file.getParentFile().exists()) {
                         file.getParentFile().mkdirs();
                     }
@@ -75,29 +59,33 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
                 if (downloadListener != null) {
                     downloadListener.onDownError(new Exception("sd卡未挂载"));
                 }
+                return null;
             }
             input = connection.getInputStream();
             output = new FileOutputStream(file);
-            byte data[] = new byte[4096];
+            byte data[] = new byte[2048];
             long total = 0;
             int count;
             while ((count = input.read(data)) != -1) {
-                // allow canceling with back button
                 if (isCancelled()) {
                     input.close();
+                    if (downloadListener != null) {
+                        downloadListener.onDownError(new Exception("取消任务下载"));
+                    }
                     return null;
                 }
                 total += count;
-                // publishing the progress....
                 if (fileLength > 0) { // only if total length is known
                     publishProgress((int) (total * 100 / fileLength));
                 }
                 output.write(data, 0, count);
 
             }
-        } catch (Exception e) {
-            return e.toString();
-
+        } catch (IOException e) {
+            file = null;
+            if (downloadListener != null) {
+                downloadListener.onDownError(new Exception(e.getMessage()));
+            }
         } finally {
             try {
                 if (output != null)
@@ -116,14 +104,7 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        // take CPU lock to prevent CPU from going off if the user
-        // presses the power button during download
-        PowerManager pm = (PowerManager) context
-                .getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                getClass().getName());
-        mWakeLock.acquire();
-        //systemSettingActivity.pBar.show();
+
     }
 
     @Override
@@ -136,37 +117,11 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
 
     @Override
     protected void onPostExecute(String result) {
-        mWakeLock.release();
-
+        if (result == null || "".equals(result)) {
+            return;
+        }
         if (downloadListener != null) {
             downloadListener.onDownFinish(result);
         }
-
-//        systemSettingActivity.update();
-    }
-
-    /**
-     * 安装app
-     *
-     * @param context
-     * @throws Exception
-     */
-    public static void installApk(Context context, String apkPath) throws Exception {
-        if (TextUtils.isEmpty(apkPath)) {
-            throw new Exception("apk url is null");
-        }
-        File apkFile = new File(apkPath);
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);//安装好了，点打开，打开新版本应用的。
-        //判读版本是否在7.0以上
-        if (Build.VERSION.SDK_INT >= 24) {
-            //provider authorities
-            Uri apkUri = FileProvider.getUriForFile(context, AUTHORITIES, apkFile);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
-        } else {
-            intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
-        }
-        context.startActivity(intent);
     }
 }

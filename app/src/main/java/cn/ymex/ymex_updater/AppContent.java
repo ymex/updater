@@ -11,5 +11,6 @@ public class AppContent extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Updater.get().config(this);
     }
 }
