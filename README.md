@@ -1,39 +1,31 @@
 [ ![Download](https://api.bintray.com/packages/ymex/maven/updater/images/download.svg) ](https://bintray.com/ymex/maven/updater/_latestVersion)
 
 # updater
-app updater manager
-
-
-***Now this library is for personal use only, please do not use it.***
+用于app内的下载升级与安装 。
 
 ## Giadle引入
 ```
-compile 'cn.ymex.app:updater:0.0.2'
-
-//需要依赖以下库
-compile 'cn.ymex:rx-retrofit:1.0.1'
-compile 'cn.ymex:popup-dialog:1.2.3'
-
-//包含依赖的库
-//compile 'com.liulishuo.filedownloader:library:1.6.8'
-```
-
-
-1、 init in Application
-```
-public class AppContent extends Application {
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Updater.init(this);
-    }
-}
-```
-
-2、check version for update
+compile 'cn.ymex.app:updater:0.0.3'
 
 ```
-String url = "http://xxxxxx/api/version/16?channel=default";
-Updater.getInstance(AppLaunchActivity.this).setVersionCode(0).checkVersion(url);
+
+
+1、 初始化updater. 在`application onCreate`中初始化
+```
+//默认配置
+Updater.get().config(this);
+//自定义配置，
+//Updater.get().config(this,MyFileProvider.class);
 ```
 
+2、下载
+
+```
+Updater.get().downloadApp(downListener, url);
+```
+
+3、安装
+
+```
+Updater.get().installApp(path);
+```

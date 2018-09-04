@@ -1,5 +1,5 @@
 <paths>
     <external-path
         name="ex_storage"
-        path="apps/ymex/files"/>
+        path="apps/update/files"/>
 </paths>

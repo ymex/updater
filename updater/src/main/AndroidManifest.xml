@@ -1,2 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cn.ymex.updater" />
+    package="cn.ymex.updater">
+
+    <application>
+        <provider
+            android:name="cn.ymex.updater.UpdateFileProvider"
+            android:authorities="${applicationId}.update_provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_file_paths_public" />
+        </provider>
+    </application>
+</manifest>
