@@ -9,7 +9,7 @@ compile 'cn.ymex.app:updater:0.0.3'
 
 ```
 
-需要拥有的必须权限 
+需要拥有的必须权限
 
 ```
 <uses-permission android:name="android.permission.INTERNET" />
